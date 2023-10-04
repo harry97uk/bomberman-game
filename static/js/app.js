@@ -28,9 +28,11 @@ const template = [
   ["▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉"],
 ];
 
-const game = new Game();
-const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
+export function startGame() {
+  const game = new Game($rootEl);
+  const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
 
-game.generateLevel(template);
-game.generatePlayer();
-requestAnimationFrame(boundLoop);
+  game.generateLevel(template);
+  game.generatePlayer();
+  requestAnimationFrame(boundLoop);
+}
