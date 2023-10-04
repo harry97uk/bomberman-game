@@ -1,4 +1,5 @@
 import { Player } from "./player.js";
+import { Bomb } from "./bomb.js";
 
 export class Game {
   constructor() {
@@ -19,12 +20,11 @@ export class Game {
     };
 
     this.gameContainer = document.getElementById("game-container");
-
-    this.player = new Player(1, 1, this);
   }
 
   generateLevel(template) {
     this.cells = [];
+    let idCounter = 0;
 
     for (let row = 0; row < this.numRows; row++) {
       this.cells[row] = [];
@@ -32,10 +32,19 @@ export class Game {
       for (let col = 0; col < this.numCols; col++) {
         // 90% chance cells will contain a soft wall
         if (!template[row][col] && Math.random() < 0.9) {
-          this.cells[row][col] = this.types.softWall;
+          this.cells[row][col] = {
+            type: this.types.softWall,
+            id: "cell" + idCounter,
+          };
         } else if (template[row][col] === this.types.wall) {
-          this.cells[row][col] = this.types.wall;
+          this.cells[row][col] = {
+            type: this.types.wall,
+            id: "cell" + idCounter,
+          };
+        } else {
+          this.cells[row][col] = { type: "space", id: "cell" + idCounter };
         }
+        idCounter++;
       }
     }
 
@@ -51,11 +60,15 @@ export class Game {
         const cellElement = document.createElement("div");
 
         // Set the class and content based on the cell type
-        if (cellType === this.types.wall) {
+        if (cellType.type === this.types.wall) {
           cellElement.classList.add("wall");
-        } else if (cellType === this.types.softWall) {
+        } else if (cellType.type === this.types.softWall) {
           cellElement.classList.add("soft-wall");
+        } else {
+          cellElement.classList.add("space");
         }
+
+        cellElement.id = cellType.id;
 
         // Set the position and size of the cell
         cellElement.style.top = row * this.grid + "px";
@@ -68,24 +81,78 @@ export class Game {
     }
   }
 
+  generatePlayer() {
+    this.player = new Player(1, 1, this);
+    document.addEventListener(
+      "keydown",
+      function (e) {
+        let row = this.player.row;
+        let col = this.player.col;
+
+        // left arrow key
+        if (e.key === "ArrowLeft") {
+          col--;
+        }
+        // up arrow key
+        else if (e.key === "ArrowUp") {
+          row--;
+        }
+        // right arrow key
+        else if (e.key === "ArrowRight") {
+          col++;
+        }
+        // down arrow key
+        else if (e.key === "ArrowDown") {
+          row++;
+        }
+        // space key (bomb)
+        else if (
+          e.key === " " &&
+          this.cells[row][col].type === "space" &&
+          // count the number of bombs the player has placed
+          this.entities.filter((entity) => {
+            return (
+              entity.type === this.types.bomb && entity.owner === this.player
+            );
+          }).length < this.player.numBombs
+        ) {
+          // place bomb
+          const bomb = new Bomb(
+            row,
+            col,
+            this.player.bombSize,
+            this.player,
+            this
+          );
+          this.entities.push(bomb);
+          this.cells[row][col].type = this.types.bomb;
+        }
+
+        // don't move the player if something is already at that position
+        if (this.cells[row][col].type === "space") {
+          this.player.row = row;
+          this.player.col = col;
+        }
+      }.bind(this)
+    );
+  }
+
   loop(timestamp) {
-    let last = this.last;
-    let dt = this.dt;
     const boundLoop = this.loop.bind(this);
 
     requestAnimationFrame(boundLoop);
 
     // calculate the time difference since the last update. requestAnimationFrame
     // passes the current timestamp as a parameter to the loop
-    if (!last) {
-      last = timestamp;
+    if (this.last === -1) {
+      this.last = timestamp;
     }
-    dt = timestamp - last;
-    last = timestamp;
+    this.dt = timestamp - this.last;
+    this.last = timestamp;
 
     // update and render all entities
     this.entities.forEach((entity) => {
-      entity.update(dt);
+      entity.update(this.dt);
       entity.render();
     });
 

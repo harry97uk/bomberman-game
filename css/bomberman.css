@@ -1,0 +1,69 @@
+html,
+body {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#game-container {
+    position: relative;
+    background-color: white;
+    width: 480px;
+    height: 416px;
+}
+
+.wall {
+    position: absolute;
+    background-color: gray;
+    border: 0.2mm solid black;
+}
+
+.soft-wall {
+    position: absolute;
+    background-color: lightgray;
+    border: 0.2mm solid black;
+}
+
+.space {
+    position: absolute;
+}
+
+.player {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: blue;
+}
+
+.bomb {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: black;
+    color: white;
+}
+
+.explosion {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: green;
+}
+
+.fire {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+}

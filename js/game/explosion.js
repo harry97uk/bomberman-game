@@ -1,10 +1,16 @@
 // explosion constructor function
 export class Explosion {
-  constructor(row, col, dir, center) {
+  constructor(row, col, dir, center, game) {
+    this.game = game;
     this.row = row;
     this.col = col;
     this.dir = dir;
     this.alive = true;
+
+    // Create an explosion container element
+    this.explosionElement = document.createElement("div");
+    this.explosionElement.classList.add("explosion");
+    this.game.gameContainer.appendChild(this.explosionElement);
 
     // show explosion for 0.3 seconds
     this.timer = 300;
@@ -15,40 +21,35 @@ export class Explosion {
 
       if (this.timer <= 0) {
         this.alive = false;
+        // Remove the explosion element from the DOM when the explosion is done
+        this.explosionElement.remove();
       }
     };
 
-    // render the explosion each frame
-    this.render = function () {
-      const x = this.col * grid;
-      const y = this.row * grid;
-      const horizontal = this.dir.col;
-      const vertical = this.dir.row;
+    // Create fire effect by stacking colored elements progressively
+    const colors = ["#D72B16", "#F39642", "#FFE5A8"];
+    for (let i = 0; i < colors.length; i++) {
+      const fireElement = document.createElement("div");
+      fireElement.classList.add("fire");
+      fireElement.style.backgroundColor = colors[i];
 
-      // create a fire effect by stacking red, orange, and yellow on top of
-      // each other using progressively smaller rectangles
-      context.fillStyle = "#D72B16"; // red
-      context.fillRect(x, y, grid, grid);
-
-      context.fillStyle = "#F39642"; // orange
-
-      // determine how to draw based on if it's vertical or horizontal
-      // center draws both ways
-      if (center || horizontal) {
-        context.fillRect(x, y + 6, grid, grid - 12);
+      if (center || (i === 0 && (dir.row || dir.col))) {
+        // Only add the innermost fire element for center or horizontal/vertical explosions
+        this.explosionElement.appendChild(fireElement);
       }
-      if (center || vertical) {
-        context.fillRect(x + 6, y, grid - 12, grid);
-      }
+    }
+  }
 
-      context.fillStyle = "#FFE5A8"; // yellow
+  // render the explosion each frame
+  render() {
+    this.updateExplosionPosition();
+  }
 
-      if (center || horizontal) {
-        context.fillRect(x, y + 12, grid, grid - 24);
-      }
-      if (center || vertical) {
-        context.fillRect(x + 12, y, grid - 24, grid);
-      }
-    };
+  // Update the explosion's position on the DOM
+  updateExplosionPosition() {
+    const x = this.col * this.game.grid;
+    const y = this.row * this.game.grid;
+    this.explosionElement.style.top = y + "px";
+    this.explosionElement.style.left = x + "px";
   }
 }

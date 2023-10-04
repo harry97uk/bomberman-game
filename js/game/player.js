@@ -1,5 +1,3 @@
-import { Bomb } from "./bomb.js";
-
 export class Player {
   constructor(row, col, game) {
     this.game = game;
@@ -16,48 +14,6 @@ export class Player {
 
     // Append the player element to the game container
     this.game.gameContainer.appendChild(this.playerElement);
-
-    document.addEventListener("keydown", function (e) {
-      let row = this.row;
-      let col = this.col;
-
-      // left arrow key
-      if (e.key === "ArrowLeft") {
-        col--;
-      }
-      // up arrow key
-      else if (e.key === "ArrowUp") {
-        row--;
-      }
-      // right arrow key
-      else if (e.key === "ArrowRight") {
-        col++;
-      }
-      // down arrow key
-      else if (e.key === "ArrowDown") {
-        row++;
-      }
-      // space key (bomb)
-      else if (
-        e.key === " " &&
-        !this.game.cells[row][col] &&
-        // count the number of bombs the player has placed
-        entities.filter((entity) => {
-          return entity.type === this.game.types.bomb && entity.owner === this;
-        }).length < this.numBombs
-      ) {
-        // place bomb
-        const bomb = new Bomb(row, col, this.bombSize, this);
-        this.game.entities.push(bomb);
-        this.game.cells[row][col] = types.bomb;
-      }
-
-      // don't move the player if something is already at that position
-      if (!this.game.cells[row][col]) {
-        this.row = row;
-        this.col = col;
-      }
-    });
   }
 
   // Update the player's position on the DOM

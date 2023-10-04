@@ -32,4 +32,5 @@ const game = new Game();
 const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
 
 game.generateLevel(template);
+game.generatePlayer();
 requestAnimationFrame(boundLoop);
