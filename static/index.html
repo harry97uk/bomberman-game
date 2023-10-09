@@ -9,8 +9,27 @@
   </head>
   <body>
     <div>
-      <input type="text" placeholder="Enter Name!" />
-      <a href="/game">Join</a>
+      <form id="nameForm">
+        <label for="name">Enter your name:</label>
+        <input type="text" id="name" required />
+        <button type="submit">Submit</button>
+      </form>
+      <script>
+        document
+          .getElementById("nameForm")
+          .addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            // Get the user's name from the input field
+            const userName = document.getElementById("name").value;
+
+            document.cookie = `userName=${encodeURIComponent(
+              userName
+            )}; path=/`;
+
+            window.location.href = "http://localhost:8080/game";
+          });
+      </script>
     </div>
   </body>
 </html>

@@ -6,6 +6,7 @@ import AddAttributesToElem from "../framework/addAttributes.js";
 import NestElements from "../framework/nestElements.js";
 import diff from "../framework/diff.js";
 import CreateEvent from "../framework/createEvent.js";
+import { socket } from "../websocket/websocket.js";
 
 export class Game {
   constructor(root) {
@@ -20,6 +21,7 @@ export class Game {
     });
     this.cells = [];
     this.entities = [];
+    this.players = [];
     this.grid = 32;
     this.numRows = 13;
     this.numCols = 15;
@@ -29,7 +31,7 @@ export class Game {
 
     // create a mapping of object types
     this.types = {
-      wall: "▉",
+      wall: "#",
       softWall: 1,
       bomb: 2,
     };
@@ -46,7 +48,7 @@ export class Game {
 
       for (let col = 0; col < this.numCols; col++) {
         // 90% chance cells will contain a soft wall
-        if (!template[row][col] && Math.random() < 0.9) {
+        if (template[row][col] === this.types.softWall) {
           this.cells[row][col] = {
             type: this.types.softWall,
             id: "cell" + idCounter,
@@ -95,11 +97,16 @@ export class Game {
     }
   }
 
-  generatePlayer() {
-    this.player = new Player(1, 1, this);
+  generatePlayer(playerNum, displayName, playerName) {
+    const player = new Player(playerNum, this, displayName);
+    this.players.push(player);
+
+    if (player.displayName !== playerName) {
+      return;
+    }
     const actions = (e) => {
-      let row = this.player.row;
-      let col = this.player.col;
+      let row = player.row;
+      let col = player.col;
 
       // left arrow key
       if (e.key === "ArrowLeft") {
@@ -123,30 +130,52 @@ export class Game {
         this.cells[row][col].type === "space" &&
         // count the number of bombs the player has placed
         this.entities.filter((entity) => {
-          return (
-            entity.type === this.types.bomb && entity.owner === this.player
-          );
-        }).length < this.player.numBombs
+          return entity.type === this.types.bomb && entity.owner === player;
+        }).length < player.numBombs
       ) {
         // place bomb
-        const bomb = new Bomb(
-          row,
-          col,
-          this.player.bombSize,
-          this.player,
-          this
-        );
+        const bomb = new Bomb(row, col, player.bombSize, player, this);
         this.entities.push(bomb);
         this.cells[row][col].type = this.types.bomb;
       }
 
       // don't move the player if something is already at that position
       if (this.cells[row][col].type === "space") {
-        this.player.row = row;
-        this.player.col = col;
+        player.row = row;
+        player.col = col;
       }
+
+      // Send player's input and playerId to the server
+      const playerInput = {
+        displayName,
+        playerNum,
+        row,
+        col,
+        action: e.key, // Store the action (e.g., "ArrowLeft", "ArrowUp", etc.)
+      };
+
+      // Send player input to the server via WebSocket
+      this.sendPlayerInput(playerInput);
     };
     CreateEvent(document.documentElement, "keydown", actions);
+  }
+
+  registerPlayerAction(playerNum, action) {
+    const player = this.players.find((p) => p.playerNum === playerNum);
+    if (player) {
+      player.registerAction(action);
+    } else {
+      console.error(`Player ${playerNum} not found.`);
+    }
+  }
+
+  sendPlayerInput(playerInput) {
+    socket.send(
+      JSON.stringify({
+        type: "player_input",
+        info: playerInput,
+      })
+    );
   }
 
   loop(timestamp) {
@@ -171,7 +200,9 @@ export class Game {
     // remove dead entities
     this.entities = this.entities.filter((entity) => entity.alive);
 
-    this.player.render();
+    this.players.forEach((player) => {
+      player.render();
+    });
 
     const patch = diff(this.vDom, this.newVDom);
     patch(this.root);

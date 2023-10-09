@@ -13,26 +13,38 @@ const $app = Render(
 let $rootEl = Mount($app, document.querySelector("#bomberman-dom-app"));
 
 const template = [
-  ["▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉"],
-  ["▉", "x", "x", , , , , , , , , , "x", "x", "▉"],
-  ["▉", "x", "▉", , "▉", , "▉", , "▉", , "▉", , "▉", "x", "▉"],
-  ["▉", "x", , , , , , , , , , , , "x", "▉"],
-  ["▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉"],
-  ["▉", , , , , , , , , , , , , , "▉"],
-  ["▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉"],
-  ["▉", , , , , , , , , , , , , , "▉"],
-  ["▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉", , "▉"],
-  ["▉", "x", , , , , , , , , , , , "x", "▉"],
-  ["▉", "x", "▉", , "▉", , "▉", , "▉", , "▉", , "▉", "x", "▉"],
-  ["▉", "x", "x", , , , , , , , , , "x", "x", "▉"],
-  ["▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉", "▉"],
+  ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+  ["#", "x", "x", , , , , , , , , , "x", "x", "#"],
+  ["#", "x", "#", , "#", , "#", , "#", , "#", , "#", "x", "#"],
+  ["#", "x", , , , , , , , , , , , "x", "#"],
+  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
+  ["#", , , , , , , , , , , , , , "#"],
+  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
+  ["#", , , , , , , , , , , , , , "#"],
+  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
+  ["#", "x", , , , , , , , , , , , "x", "#"],
+  ["#", "x", "#", , "#", , "#", , "#", , "#", , "#", "x", "#"],
+  ["#", "x", "x", , , , , , , , , , "x", "x", "#"],
+  ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
 ];
 
-export function startGame() {
-  const game = new Game($rootEl);
-  const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
+export const game = new Game($rootEl);
+let playerName;
+let players = [];
+const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
 
+export function startGame(template) {
+  players.forEach((player, index) => {
+    game.generatePlayer(index, player, playerName);
+  });
   game.generateLevel(template);
-  game.generatePlayer();
   requestAnimationFrame(boundLoop);
+}
+
+export function setPlayerName(name) {
+  playerName = name;
+}
+
+export function setPlayers(playerArr) {
+  players = playerArr;
 }

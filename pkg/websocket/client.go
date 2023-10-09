@@ -5,10 +5,13 @@
 package websocket
 
 import (
+	"bomberman_server/pkg/gamestate"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -39,6 +42,13 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
+// GameSession represents a game session with players.
+type GameSession struct {
+	clients   []*Client
+	gameState *gamestate.GameState
+	mu        sync.Mutex
+}
+
 type ReadMessage struct {
 	Type string                 `json:"type"`
 	Info map[string]interface{} `json:"info"`
@@ -48,10 +58,7 @@ type WriteMessage struct {
 	Data interface{} `json:"data"`
 }
 
-type BasicUserInfo struct {
-	ID   string
-	Name string
-}
+var gameSessions []*GameSession
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
@@ -62,6 +69,9 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	name        string
+	gameSession *GameSession
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -95,7 +105,16 @@ func (c *Client) readPump() {
 		}
 
 		switch msg.Type {
-
+		case "player_joined":
+			handleClientJoinedGameSession(msg, c)
+			break
+		case "player_input":
+			handlePlayerInput(msg, c)
+			break
+		case "game_start":
+			break
+		case "game_update":
+			break
 		default:
 			log.Println(msg)
 			break
@@ -134,6 +153,7 @@ func (c *Client) writePump() {
 				return
 			}
 
+			fmt.Println(string(message))
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
@@ -164,13 +184,28 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
-	client.hub.register <- client
+	// Create or join a game session
+	var session *GameSession
+	for _, gs := range gameSessions {
+		if len(gs.clients) < 2 {
+			session = gs
+			break
+		}
+	}
 
-	// Allow collection of memory referenced by the caller by doing all work in
-	// new goroutines.
-	go client.writePump()
+	if session == nil {
+		session = &GameSession{}
+		session.gameState = &gamestate.GameState{}
+		session.gameState.InitialiseMap()
+		gameSessions = append(gameSessions, session)
+	}
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), gameSession: session}
+	client.hub.register <- client
+	session.AddPlayer(client)
+
 	go client.readPump()
+	go client.writePump()
 }
 
 func createMarshalledWriteMessage(typ string, data interface{}) []byte {
@@ -182,4 +217,27 @@ func createMarshalledWriteMessage(typ string, data interface{}) []byte {
 		log.Printf("error: %v", err)
 	}
 	return marshalledData
+}
+
+// AddPlayer adds a player to the game session.
+func (gs *GameSession) AddPlayer(client *Client) {
+	gs.mu.Lock()
+	defer gs.mu.Unlock()
+
+	gs.clients = append(gs.clients, client)
+
+}
+
+func (gs *GameSession) StartGame() {
+	fmt.Println("Starting the game...")
+	message := createMarshalledWriteMessage("game_start", map[string]interface{}{
+		"template": gs.gameState.Cells,
+	})
+	for _, client := range gs.clients {
+		select {
+		case client.send <- message:
+		default:
+			close(client.send)
+		}
+	}
 }
