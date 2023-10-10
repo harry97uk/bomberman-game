@@ -1,5 +1,7 @@
 package gamestate
 
+import "math/rand"
+
 type Player struct {
 	PlayerNumber int    `json:"player_number"`
 	DisplayName  string `json:"display_name"`
@@ -15,7 +17,16 @@ func (gs *GameState) InitialiseMap() {
 	for i, row := range template {
 		gs.Cells = append(gs.Cells, []string{})
 		for _, v := range row {
-			gs.Cells[i] = append(gs.Cells[i], v)
+			if v == "" {
+				chance := rand.Intn(100)
+				if chance < 90 {
+					gs.Cells[i] = append(gs.Cells[i], "1")
+				} else {
+					gs.Cells[i] = append(gs.Cells[i], v)
+				}
+			} else {
+				gs.Cells[i] = append(gs.Cells[i], v)
+			}
 		}
 	}
 }

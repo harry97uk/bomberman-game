@@ -11,7 +11,12 @@
     <div>
       <form id="nameForm">
         <label for="name">Enter your name:</label>
-        <input type="text" id="name" required />
+        <input
+          type="text"
+          id="name"
+          required
+          onkeypress="return event.key !== ' '"
+        />
         <button type="submit">Submit</button>
       </form>
       <script>
@@ -21,7 +26,7 @@
             event.preventDefault();
 
             // Get the user's name from the input field
-            const userName = document.getElementById("name").value;
+            const userName = document.getElementById("name").value.trim();
 
             document.cookie = `userName=${encodeURIComponent(
               userName

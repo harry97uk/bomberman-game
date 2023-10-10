@@ -104,6 +104,7 @@ export class Bomb {
         const row = this.row + dir.row * i;
         const col = this.col + dir.col * i;
         const cell = this.game.cells[row][col];
+        const initialCellType = cell.type;
 
         // stop the explosion if it hit a wall
         if (cell.type === this.game.types.wall) {
@@ -124,7 +125,10 @@ export class Bomb {
         );
 
         // bomb hit another bomb so blow that one up too
-        if (cell === this.game.types.bomb) {
+        if (
+          (row !== this.row || col !== this.col) &&
+          initialCellType === this.game.types.bomb
+        ) {
           // find the bomb that was hit by comparing positions
           const nextBomb = this.game.entities.find((entity) => {
             return (
@@ -137,9 +141,20 @@ export class Bomb {
         }
 
         // stop the explosion if hit anything
-        if (cell.type !== "space") {
+        if (initialCellType !== "space" && initialCellType !== 2) {
           return;
         }
+
+        this.game.players.forEach((player) => {
+          if (player.row === row && player.col === col) {
+            player.lives--;
+            if (player.lives < 0) {
+              RemoveChildElement(this.game.gameContainer, player.playerElement);
+            }
+            player.row = player.initRow;
+            player.col = player.initCol;
+          }
+        });
       }
     });
   }

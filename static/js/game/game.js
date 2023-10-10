@@ -48,7 +48,8 @@ export class Game {
 
       for (let col = 0; col < this.numCols; col++) {
         // 90% chance cells will contain a soft wall
-        if (template[row][col] === this.types.softWall) {
+        console.log(template[row][col]);
+        if (template[row][col] === "1") {
           this.cells[row][col] = {
             type: this.types.softWall,
             id: "cell" + idCounter,

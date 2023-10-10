@@ -12,6 +12,8 @@ const PLAYERS = [
 export class Player {
   constructor(playerNum, game, displayName) {
     this.game = game;
+    this.initRow = PLAYERS[playerNum].row;
+    this.initCol = PLAYERS[playerNum].col;
     this.row = PLAYERS[playerNum].row;
     this.col = PLAYERS[playerNum].col;
     this.colour = PLAYERS[playerNum].colour;
@@ -19,12 +21,15 @@ export class Player {
     this.playerNum = playerNum;
     this.numBombs = 1;
     this.bombSize = 3;
+    this.lives = 3;
     this.radius = game.grid * 0.35;
 
     // Create a player DOM element
     // this.playerElement = document.createElement("div");
     // this.playerElement.classList.add("player");
-    this.playerElement = CreateElement("div", { attrs: { class: "player" } });
+    this.playerElement = CreateElement("div", {
+      attrs: { class: "player", id: displayName + playerNum },
+    });
     this.updatePlayerPosition();
 
     // Append the player element to the game container
@@ -38,6 +43,7 @@ export class Player {
     this.playerElement.attrs.style = `background-color: ${this.colour};top: ${
       this.row * this.game.grid
     }px; left: ${this.col * this.game.grid}px;`;
+    this.playerElement.children = [`${this.lives}`];
   }
 
   render() {
