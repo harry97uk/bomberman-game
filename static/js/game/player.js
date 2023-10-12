@@ -1,5 +1,6 @@
 import CreateElement from "../framework/createElement.js";
 import NestElements from "../framework/nestElements.js";
+import RemoveChildElement from "../framework/removeElement.js";
 import { Bomb } from "./bomb.js";
 
 const PLAYERS = [
@@ -16,6 +17,9 @@ export class Player {
     this.initCol = PLAYERS[playerNum].col;
     this.row = PLAYERS[playerNum].row;
     this.col = PLAYERS[playerNum].col;
+    this.dx = 0;
+    this.dy = 0;
+    this.speed = 2;
     this.colour = PLAYERS[playerNum].colour;
     this.displayName = displayName;
     this.playerNum = playerNum;
@@ -23,6 +27,7 @@ export class Player {
     this.bombSize = 3;
     this.lives = 3;
     this.radius = game.grid * 0.35;
+    this.timer = 500;
 
     // Create a player DOM element
     // this.playerElement = document.createElement("div");
@@ -40,35 +45,91 @@ export class Player {
 
   // Update the player's position on the DOM
   updatePlayerPosition() {
+    this.timer = 500;
+    this.dx = 0;
+    this.dy = 0;
     this.playerElement.attrs.style = `background-color: ${this.colour};top: ${
       this.row * this.game.grid
     }px; left: ${this.col * this.game.grid}px;`;
     this.playerElement.children = [`${this.lives}`];
   }
 
-  render() {
-    this.updatePlayerPosition();
+  render(dt) {
+    let count = 0;
+    let done = false;
+    let rowDirectionOffset = 0;
+    let colDirectionOffset = 0;
+
+    const direction = this.dx !== 0 ? "x" : this.dy !== 0 ? "y" : null;
+    if (direction) {
+      this.timer -= dt;
+      count = Math.min(
+        (this.speed / 10) * (500 - this.timer),
+        Math.abs(direction === "x" ? this.dx : this.dy) * this.game.grid
+      );
+      if (
+        count >=
+        Math.abs(direction === "x" ? this.dx : this.dy) * this.game.grid
+      ) {
+        done = true;
+      }
+      if (direction === "x") {
+        colDirectionOffset = this.dx < 0 ? 1 : -1;
+        count *= this.dx < 0 ? -1 : 1;
+      } else {
+        rowDirectionOffset = this.dy < 0 ? 1 : -1;
+        count *= this.dy < 0 ? -1 : 1;
+      }
+      this.transformPlayerPosition(
+        rowDirectionOffset,
+        colDirectionOffset,
+        count
+      );
+    }
+
+    if (done || this.timer < 0) {
+      this.updatePlayerPosition();
+    }
+  }
+
+  transformPlayerPosition(rowDirectionOffset, colDirectionOffset, count) {
+    let axis;
+
+    if (rowDirectionOffset !== 0) axis = "Y";
+    else if (colDirectionOffset !== 0) axis = "X";
+
+    this.playerElement.attrs.style = `background-color: ${this.colour};top: ${
+      (this.row + rowDirectionOffset) * this.game.grid
+    }px; left: ${
+      (this.col + colDirectionOffset) * this.game.grid
+    }px;transform: translate${axis}(${count}px)`;
   }
 
   registerAction(action) {
     let row = this.row;
     let col = this.col;
+    let dx = 0;
+    let dy = 0;
 
     // left arrow key
     if (action === "ArrowLeft") {
       col--;
+      dx--;
     }
     // up arrow key
     else if (action === "ArrowUp") {
       row--;
+      dy--;
     }
     // right arrow key
     else if (action === "ArrowRight") {
       col++;
+      dx++;
     }
     // down arrow key
     else if (action === "ArrowDown") {
       row++;
+      dy++;
     }
     // space key (bomb)
     else if (
@@ -89,6 +150,18 @@ export class Player {
     if (this.game.cells[row][col].type === "space") {
       this.row = row;
       this.col = col;
+      this.dx = dx;
+      this.dy = dy;
     }
+  }
+
+  loseLife() {
+    this.lives--;
+    if (this.lives < 0) {
+      RemoveChildElement(this.game.gameContainer, player.playerElement);
+    }
+    this.row = this.initRow;
+    this.col = this.initCol;
+    this.updatePlayerPosition();
   }
 }

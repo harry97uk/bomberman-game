@@ -106,45 +106,9 @@ export class Game {
       return;
     }
     const actions = (e) => {
-      let row = player.row;
-      let col = player.col;
-
-      // left arrow key
-      if (e.key === "ArrowLeft") {
-        col--;
-      }
-      // up arrow key
-      else if (e.key === "ArrowUp") {
-        row--;
-      }
-      // right arrow key
-      else if (e.key === "ArrowRight") {
-        col++;
-      }
-      // down arrow key
-      else if (e.key === "ArrowDown") {
-        row++;
-      }
-      // space key (bomb)
-      else if (
-        e.key === " " &&
-        this.cells[row][col].type === "space" &&
-        // count the number of bombs the player has placed
-        this.entities.filter((entity) => {
-          return entity.type === this.types.bomb && entity.owner === player;
-        }).length < player.numBombs
-      ) {
-        // place bomb
-        const bomb = new Bomb(row, col, player.bombSize, player, this);
-        this.entities.push(bomb);
-        this.cells[row][col].type = this.types.bomb;
-      }
-
-      // don't move the player if something is already at that position
-      if (this.cells[row][col].type === "space") {
-        player.row = row;
-        player.col = col;
-      }
+      player.registerAction(e.key);
+      const row = player.row;
+      const col = player.col;
 
       // Send player's input and playerId to the server
       const playerInput = {
@@ -182,15 +146,12 @@ export class Game {
   loop(timestamp) {
     const boundLoop = this.loop.bind(this);
 
-    requestAnimationFrame(boundLoop);
-
     // calculate the time difference since the last update. requestAnimationFrame
     // passes the current timestamp as a parameter to the loop
     if (this.last === -1) {
       this.last = timestamp;
     }
     this.dt = timestamp - this.last;
-    this.last = timestamp;
 
     // update and render all entities
     this.entities.forEach((entity) => {
@@ -202,11 +163,14 @@ export class Game {
     this.entities = this.entities.filter((entity) => entity.alive);
 
     this.players.forEach((player) => {
-      player.render();
+      player.render(this.dt);
     });
 
     const patch = diff(this.vDom, this.newVDom);
     patch(this.root);
     this.vDom = JSON.parse(JSON.stringify(this.newVDom));
+
+    this.last = timestamp;
+    requestAnimationFrame(boundLoop);
   }
 }

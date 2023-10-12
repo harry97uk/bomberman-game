@@ -99,6 +99,10 @@ export class Bomb {
         col: 1,
       },
     ];
+
+    //players already hit by bomb
+    const affectedPlayers = [];
+
     dirs.forEach((dir) => {
       for (let i = 0; i < this.size; i++) {
         const row = this.row + dir.row * i;
@@ -146,13 +150,10 @@ export class Bomb {
         }
 
         this.game.players.forEach((player) => {
+          if (affectedPlayers.includes(player.playerNum)) return;
           if (player.row === row && player.col === col) {
-            player.lives--;
-            if (player.lives < 0) {
-              RemoveChildElement(this.game.gameContainer, player.playerElement);
-            }
-            player.row = player.initRow;
-            player.col = player.initCol;
+            player.loseLife();
+            affectedPlayers.push(player.playerNum);
           }
         });
       }
