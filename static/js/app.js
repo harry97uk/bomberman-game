@@ -2,6 +2,7 @@ import CreateElement from "./framework/createElement.js";
 import Mount from "./framework/mount.js";
 import Render from "./framework/render.js";
 import { Game } from "./game/game.js";
+import { socket } from "./websocket/websocket.js";
 
 const $app = Render(
   CreateElement("div", {
@@ -11,22 +12,6 @@ const $app = Render(
 );
 
 let $rootEl = Mount($app, document.querySelector("#bomberman-dom-app"));
-
-const template = [
-  ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-  ["#", "x", "x", , , , , , , , , , "x", "x", "#"],
-  ["#", "x", "#", , "#", , "#", , "#", , "#", , "#", "x", "#"],
-  ["#", "x", , , , , , , , , , , , "x", "#"],
-  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
-  ["#", , , , , , , , , , , , , , "#"],
-  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
-  ["#", , , , , , , , , , , , , , "#"],
-  ["#", , "#", , "#", , "#", , "#", , "#", , "#", , "#"],
-  ["#", "x", , , , , , , , , , , , "x", "#"],
-  ["#", "x", "#", , "#", , "#", , "#", , "#", , "#", "x", "#"],
-  ["#", "x", "x", , , , , , , , , , "x", "x", "#"],
-  ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-];
 
 export const game = new Game($rootEl);
 let playerName;
@@ -43,8 +28,27 @@ export function startGame(template) {
 
 export function setPlayerName(name) {
   playerName = name;
+  addChatFormListener();
 }
 
 export function setPlayers(playerArr) {
   players = playerArr;
+}
+
+function addChatFormListener() {
+  document
+    .getElementById("chat-form")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Get the user's name from the input field
+      const message = document.getElementById("chat-message").value;
+
+      socket.send(
+        JSON.stringify({
+          type: "chat_message",
+          info: { sender: playerName, message: message },
+        })
+      );
+    });
 }

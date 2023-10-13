@@ -14,7 +14,7 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     background-color: lightblue;
     height: 60%;
@@ -24,17 +24,60 @@ body {
 #game-lobby #game-players {
     display: flex;
     flex-direction: column;
-    height: 20%;
-    width: 100%;
+    height: 15%;
+    width: 90%;
+    padding: 5%;
     background-color: antiquewhite;
 }
 
 #game-lobby #game-chat {
     display: flex;
-    flex-direction: column;
-    height: 80%;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    align-items: center;
+    height: 75%;
     width: 100%;
     background-color: lightblue;
+}
+
+#game-lobby #game-chat .chat-message {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    width: 80%;
+    height: 10%;
+    margin: 2%;
+    background-color: white;
+    border-radius: 10%;
+}
+
+#game-lobby #game-chat #chat-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10%;
+    width: 90%;
+}
+
+#game-lobby #game-chat #chat-input form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+#game-lobby #game-chat #chat-input input {
+    height: 100%;
+    width: 70%;
+}
+
+#game-lobby #game-chat #chat-input button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 120%;
+    width: 30%;
 }
 
 #bomberman-dom-app {
@@ -56,14 +99,26 @@ body {
 
 .wall {
     position: absolute;
-    background-color: gray;
-    border: 0.2mm solid black;
+    background-color: rgb(128, 127, 127);
+    height: 32px;
+    width: 32px;
+    border-radius: 8%;
+    background-image: url("../assets/Classic_Stage-removebg-preview.png");
+    background-position: 112px -217.5px;
+    background-size: 3300%;
+
 }
 
 .soft-wall {
     position: absolute;
-    background-color: lightgray;
-    border: 0.2mm solid black;
+    height: 32px;
+    width: 32px;
+    background-image: url("../assets/Classic_Stage-removebg-preview.png");
+    background-position: 42px -285px;
+    background-size: 3300%;
+    /* background-image: url("../assets/Enemies_Miscellaneous-removebg-preview.png");
+    background-size: 3200%;
+    background-position: 1px -58px; */
 }
 
 .space {
@@ -75,9 +130,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    width: 18px;
+    height: 28px;
+    background-image: url("../assets/Bombermen-removebg-preview.png");
 }
 
 .bomb {

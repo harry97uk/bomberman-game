@@ -44,9 +44,15 @@ var upgrader = websocket.Upgrader{
 
 // GameSession represents a game session with players.
 type GameSession struct {
-	clients   []*Client
-	gameState *gamestate.GameState
-	mu        sync.Mutex
+	clients      []*Client
+	gameState    *gamestate.GameState
+	chatMessages []ChatMessage
+	mu           sync.Mutex
+}
+
+type ChatMessage struct {
+	Sender  string
+	Message string
 }
 
 type ReadMessage struct {
@@ -114,6 +120,9 @@ func (c *Client) readPump() {
 		case "game_start":
 			break
 		case "game_update":
+			break
+		case "chat_message":
+			handleChatMessage(msg, c)
 			break
 		default:
 			log.Println(msg)

@@ -106,6 +106,7 @@ export class Game {
       return;
     }
     const actions = (e) => {
+      if (player.timer !== 500) return;
       player.registerAction(e.key);
       const row = player.row;
       const col = player.col;

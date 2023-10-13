@@ -4,10 +4,10 @@ import RemoveChildElement from "../framework/removeElement.js";
 import { Bomb } from "./bomb.js";
 
 const PLAYERS = [
-  { colour: "blue", row: 1, col: 1 },
-  { colour: "red", row: 1, col: 13 },
-  { colour: "green", row: 11, col: 1 },
-  { colour: "yellow", row: 11, col: 13 },
+  { colour: "blue", row: 1, col: 1, backgroundYPosition: 0 },
+  { colour: "red", row: 1, col: 13, backgroundYPosition: -40 },
+  { colour: "green", row: 11, col: 1, backgroundYPosition: -80 },
+  { colour: "yellow", row: 11, col: 13, backgroundYPosition: -120 },
 ];
 
 export class Player {
@@ -19,7 +19,8 @@ export class Player {
     this.col = PLAYERS[playerNum].col;
     this.dx = 0;
     this.dy = 0;
-    this.speed = 2;
+    this.backgroundYPosition = PLAYERS[playerNum].backgroundYPosition;
+    this.speed = 1;
     this.colour = PLAYERS[playerNum].colour;
     this.displayName = displayName;
     this.playerNum = playerNum;
@@ -48,10 +49,11 @@ export class Player {
     this.timer = 500;
     this.dx = 0;
     this.dy = 0;
-    this.playerElement.attrs.style = `background-color: ${this.colour};top: ${
-      this.row * this.game.grid
-    }px; left: ${this.col * this.game.grid}px;`;
-    this.playerElement.children = [`${this.lives}`];
+    this.playerElement.attrs.style = `top: ${
+      this.row * this.game.grid + 2
+    }px; left: ${
+      this.col * this.game.grid + 6
+    }px;background-position: -120.5px ${this.backgroundYPosition}px`;
   }
 
   render(dt) {
@@ -59,6 +61,7 @@ export class Player {
     let done = false;
     let rowDirectionOffset = 0;
     let colDirectionOffset = 0;
+    let backgroundXPosition = -120.5;
 
     const direction = this.dx !== 0 ? "x" : this.dy !== 0 ? "y" : null;
     if (direction) {
@@ -76,13 +79,19 @@ export class Player {
       if (direction === "x") {
         colDirectionOffset = this.dx < 0 ? 1 : -1;
         count *= this.dx < 0 ? -1 : 1;
+        backgroundXPosition = -100.5;
+        if (this.col % 2 == 0) backgroundXPosition += 20;
       } else {
         rowDirectionOffset = this.dy < 0 ? 1 : -1;
         count *= this.dy < 0 ? -1 : 1;
+        backgroundXPosition = this.dy < 0 ? -20.5 : -140.5;
+        if (this.row % 2 == 0) backgroundXPosition += 20;
       }
+
       this.transformPlayerPosition(
         rowDirectionOffset,
         colDirectionOffset,
+        backgroundXPosition,
         count
       );
     }
@@ -92,17 +101,30 @@ export class Player {
     }
   }
 
-  transformPlayerPosition(rowDirectionOffset, colDirectionOffset, count) {
+  transformPlayerPosition(
+    rowDirectionOffset,
+    colDirectionOffset,
+    backgroundXPosition,
+    count
+  ) {
     let axis;
+    let flip = "";
 
     if (rowDirectionOffset !== 0) axis = "Y";
     else if (colDirectionOffset !== 0) axis = "X";
 
-    this.playerElement.attrs.style = `background-color: ${this.colour};top: ${
-      (this.row + rowDirectionOffset) * this.game.grid
+    if (colDirectionOffset < 0 && count > 0) {
+      flip = "scaleX(-1) ";
+      count *= -1;
+    }
+
+    this.playerElement.attrs.style = `top: ${
+      (this.row + rowDirectionOffset) * this.game.grid + 2
     }px; left: ${
-      (this.col + colDirectionOffset) * this.game.grid
-    }px;transform: translate${axis}(${count}px)`;
+      (this.col + colDirectionOffset) * this.game.grid + 6
+    }px;transform: ${flip}translate${axis}(${count}px);background-position: ${backgroundXPosition}px ${
+      this.backgroundYPosition
+    }px`;
   }
 
   registerAction(action) {

@@ -10,8 +10,19 @@
   <body>
     <div id="game-lobby">
       <div id="game-players"></div>
-      <div id="num-of-players"></div>
-      <div id="game-chat"></div>
+      <div id="game-chat">
+        <div id="chat-input">
+          <form id="chat-form">
+            <input
+              type="text"
+              maxlength="50"
+              placeholder="Enter text..."
+              id="chat-message"
+            />
+            <button type="submit">Send Message</button>
+          </form>
+        </div>
+      </div>
     </div>
     <div id="bomberman-dom-app">
       <div id="game"></div>
