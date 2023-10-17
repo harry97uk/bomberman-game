@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"fmt"
-	"time"
 )
 
 func handleClientJoinedGameSession(msg ReadMessage, c *Client) error {
@@ -22,11 +21,6 @@ func handleClientJoinedGameSession(msg ReadMessage, c *Client) error {
 			"number_of_players": len(c.gameSession.clients),
 		})
 		client.send <- messageToSend
-	}
-
-	time.Sleep(200 * time.Millisecond)
-	if len(c.gameSession.clients) == 2 {
-		c.gameSession.StartGame()
 	}
 
 	return nil

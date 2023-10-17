@@ -2,7 +2,10 @@ import CreateElement from "../framework/createElement.js";
 import { findElementInVDom } from "../framework/findElemInVdom.js";
 import NestElements from "../framework/nestElements.js";
 import RemoveChildElement from "../framework/removeElement.js";
+import { randomIntFromInterval } from "../helpers/randomInt.js";
+import { socket } from "../websocket/websocket.js";
 import { Explosion } from "./explosion.js";
+import { PowerUp } from "./powerup.js";
 
 // bomb constructor function
 export class Bomb {
@@ -16,9 +19,12 @@ export class Bomb {
     this.alive = true;
     this.type = this.game.types.bomb;
 
+    const x = this.col * this.game.grid;
+    const y = this.row * this.game.grid;
+
     // Create a bomb DOM element
     this.bombElement = CreateElement("div", {
-      attrs: { class: "bomb" },
+      attrs: { class: "bomb", style: `top: ${y}px; left: ${x}px;` },
       children: ["3"],
     });
 
@@ -42,21 +48,11 @@ export class Bomb {
     } else if (this.timer < 1000) {
       this.bombElement.children = ["1"];
     }
-
-    // change the size of the bomb every half second. we can determine the size
-    // by dividing by 500 (half a second) and taking the ceiling of the result.
-    // then we can check if the result is even or odd and change the size
-    const interval = Math.ceil(this.timer / 500);
-    if (interval % 2 === 0) {
-      this.radius = this.game.grid * 0.4;
-    } else {
-      this.radius = this.game.grid * 0.5;
-    }
   }
 
   // render the bomb each frame
   render() {
-    this.updateBombPosition();
+    //console.log("no render needed");
   }
 
   // Update the bomb's position on the DOM
@@ -115,6 +111,29 @@ export class Bomb {
           return;
         }
 
+        if (cell.type === this.game.types.softWall) {
+          if (randomIntFromInterval(0, 4) === 0) {
+            const powerups = this.game.entities.filter((ent) => {
+              return ent.powerup && ent.row === row && ent.col === col;
+            });
+            if (powerups.length === 0) {
+              const powerup = new PowerUp(row, col, this.game);
+              this.game.entities.push(powerup);
+              socket.send(
+                JSON.stringify({
+                  type: "game_update",
+                  info: {
+                    desc: "new_powerup",
+                    row: powerup.row,
+                    col: powerup.col,
+                    ptype: powerup.powerup.type,
+                  },
+                })
+              );
+            }
+          }
+        }
+
         if (cell.type !== this.game.types.wall) {
           const cellElement = findElementInVDom(this.game.newVDom, "div", {
             id: `${cell.id}`,
@@ -141,7 +160,7 @@ export class Bomb {
               entity.col === col
             );
           });
-          blowUpBomb(nextBomb);
+          nextBomb.blowUpBomb();
         }
 
         // stop the explosion if hit anything

@@ -11,9 +11,12 @@ export class Explosion {
     this.dir = dir;
     this.alive = true;
 
+    const x = this.col * this.game.grid;
+    const y = this.row * this.game.grid;
+
     // Create an explosion container element
     this.explosionElement = CreateElement("div", {
-      attrs: { class: "explosion" },
+      attrs: { class: "explosion", style: `top: ${y}px; left: ${x}px;` },
     });
 
     NestElements(this.game.gameContainer, this.explosionElement);
@@ -54,13 +57,6 @@ export class Explosion {
 
   // render the explosion each frame
   render() {
-    this.updateExplosionPosition();
-  }
-
-  // Update the explosion's position on the DOM
-  updateExplosionPosition() {
-    const x = this.col * this.game.grid;
-    const y = this.row * this.game.grid;
-    this.explosionElement.attrs.style = `top: ${y}px; left: ${x}px;`;
+    //console.log("no render needed");
   }
 }

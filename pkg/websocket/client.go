@@ -6,6 +6,7 @@ package websocket
 
 import (
 	"bomberman_server/pkg/gamestate"
+	"bomberman_server/pkg/helpers"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -47,6 +48,8 @@ type GameSession struct {
 	clients      []*Client
 	gameState    *gamestate.GameState
 	chatMessages []ChatMessage
+	timer        int
+	started      bool
 	mu           sync.Mutex
 }
 
@@ -118,8 +121,10 @@ func (c *Client) readPump() {
 			handlePlayerInput(msg, c)
 			break
 		case "game_start":
+			handleStartGame(msg, c)
 			break
 		case "game_update":
+			handleGameUpdate(msg, c)
 			break
 		case "chat_message":
 			handleChatMessage(msg, c)
@@ -196,7 +201,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Create or join a game session
 	var session *GameSession
 	for _, gs := range gameSessions {
-		if len(gs.clients) < 2 {
+		if len(gs.clients) < 4 && !gs.started {
 			session = gs
 			break
 		}
@@ -232,6 +237,29 @@ func createMarshalledWriteMessage(typ string, data interface{}) []byte {
 func (gs *GameSession) AddPlayer(client *Client) {
 	gs.mu.Lock()
 	defer gs.mu.Unlock()
+
+	if len(gs.clients) > 1 {
+		timeTicker := helpers.SetInterval(
+			func() {
+				//send ws message
+
+				gs.timer--
+
+				if gs.timer == 0 && !gs.started {
+					gs.started = true
+					gs.timer = 10
+				}
+
+			},
+			1*time.Second,
+			func() bool {
+				if gs.timer == 0 && gs.started {
+					return true
+				}
+				return false
+			})
+		timeTicker.Reset()
+	}
 
 	gs.clients = append(gs.clients, client)
 

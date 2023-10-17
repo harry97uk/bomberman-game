@@ -80,6 +80,13 @@ body {
     width: 30%;
 }
 
+#game-timer {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    color: white;
+}
+
 #bomberman-dom-app {
     position: relative;
     height: 100%;
@@ -157,4 +164,46 @@ body {
     position: absolute;
     width: 32px;
     height: 32px;
+}
+
+.powerup {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    animation: powerupBob 1s infinite;
+}
+
+.increase_bombs {
+    background-image: url("../assets/NES_-_Bomberman_-_General_Sprites-removebg-preview.png");
+    background-size: 1500%;
+    background-position: 0px -300px;
+}
+
+.increased_speed {
+    background-image: url("../assets/NES_-_Bomberman_-_General_Sprites-removebg-preview.png");
+    background-size: 1500%;
+    background-position: -65px -300px;
+}
+
+.increased_blast_radius {
+    background-image: url("../assets/NES_-_Bomberman_-_General_Sprites-removebg-preview.png");
+    background-size: 1500%;
+    background-position: -130px -300px;
+}
+
+@keyframes powerupBob {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-2px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
 }

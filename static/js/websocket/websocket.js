@@ -34,10 +34,16 @@ socket.addEventListener("open", (event) => {
 
 // Event handler for incoming messages from the server
 socket.addEventListener("message", (event) => {
-  const msg = JSON.parse(event.data);
-  console.log("Message from server:", msg);
+  let buffer = "";
+  const messages = (buffer + event.data).split("\n");
 
-  handleWebsocketMessage(msg);
+  for (const message of messages) {
+    const msg = JSON.parse(message);
+    console.log("Message from server:", msg);
+
+    handleWebsocketMessage(msg);
+  }
+
   // You can process and handle the incoming data here
 });
 

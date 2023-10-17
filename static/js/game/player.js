@@ -1,6 +1,7 @@
 import CreateElement from "../framework/createElement.js";
 import NestElements from "../framework/nestElements.js";
 import RemoveChildElement from "../framework/removeElement.js";
+import { socket } from "../websocket/websocket.js";
 import { Bomb } from "./bomb.js";
 
 const PLAYERS = [
@@ -174,16 +175,51 @@ export class Player {
       this.col = col;
       this.dx = dx;
       this.dy = dy;
+      const powerup = this.game.entities.filter((ent) => {
+        return ent.powerup && ent.row === this.row && ent.col === this.col;
+      });
+      if (powerup.length > 0) {
+        this.applyPowerUp(powerup[0]);
+        powerup[0].timer = 0;
+        socket.send(
+          JSON.stringify({
+            type: "game_update",
+            info: {
+              desc: "remove_powerup",
+              row: powerup[0].row,
+              col: powerup[0].col,
+              ptype: powerup[0].powerup.type,
+            },
+          })
+        );
+      }
     }
   }
 
   loseLife() {
     this.lives--;
     if (this.lives < 0) {
-      RemoveChildElement(this.game.gameContainer, player.playerElement);
+      RemoveChildElement(this.game.gameContainer, this.playerElement);
     }
     this.row = this.initRow;
     this.col = this.initCol;
     this.updatePlayerPosition();
+  }
+
+  applyPowerUp(powerup) {
+    switch (powerup.powerup.type) {
+      case "increase_bombs":
+        this.numBombs++;
+        break;
+      case "increased_speed":
+        this.speed += 0.2;
+        break;
+      case "increased_blast_radius":
+        this.bombSize++;
+        break;
+
+      default:
+        break;
+    }
   }
 }

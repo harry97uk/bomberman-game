@@ -1,5 +1,4 @@
 import { Player } from "./player.js";
-import { Bomb } from "./bomb.js";
 import { findElementInVDom } from "../framework/findElemInVdom.js";
 import CreateElement from "../framework/createElement.js";
 import AddAttributesToElem from "../framework/addAttributes.js";
