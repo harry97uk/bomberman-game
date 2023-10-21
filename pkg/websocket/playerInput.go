@@ -11,7 +11,7 @@ func handlePlayerInput(msg ReadMessage, c *Client) error {
 
 	for _, client := range c.gameSession.clients {
 
-		messageToSend := createMarshalledWriteMessage("player_action", map[string]interface{}{
+		messageToSend := CreateMarshalledWriteMessage("player_action", map[string]interface{}{
 			"player_number": playerNum,
 			"player_action": action,
 		})

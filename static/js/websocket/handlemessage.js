@@ -1,8 +1,9 @@
-import { game, startGame } from "../app.js";
+import { startGame } from "../app.js";
 import { handleChatMessages } from "./chatMessages.js";
 import { updatePlayersInformation } from "./updatePlayerInfo.js";
 import { updateGame } from "./updateGame.js";
 import { handlePlayerAction } from "./playerAction.js";
+import { handleTimeInformation } from "./timeInformation.js";
 
 export function handleWebsocketMessage(msg) {
   switch (msg.type) {

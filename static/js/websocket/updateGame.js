@@ -1,3 +1,6 @@
+import { game } from "../app.js";
+import { PowerUp } from "../game/powerup.js";
+
 // Update the game state based on the server's update
 export function updateGame(data) {
   // Update the client's game state with the new data from the server

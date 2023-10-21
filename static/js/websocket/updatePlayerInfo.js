@@ -1,3 +1,5 @@
+import { setPlayers } from "../app.js";
+
 export function updatePlayersInformation(msg) {
   const playersNameDisplay = document.getElementById("game-players");
   const playersNameArray = msg.data.players;

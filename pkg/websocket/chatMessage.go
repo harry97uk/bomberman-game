@@ -13,7 +13,7 @@ func handleChatMessage(msg ReadMessage, c *Client) error {
 
 	for _, client := range c.gameSession.clients {
 
-		messageToSend := createMarshalledWriteMessage("chat_message", map[string]interface{}{
+		messageToSend := CreateMarshalledWriteMessage("chat_message", map[string]interface{}{
 			"chat_messages": c.gameSession.chatMessages,
 		})
 

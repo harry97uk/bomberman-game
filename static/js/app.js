@@ -19,6 +19,9 @@ let players = [];
 const boundLoop = game.loop.bind(game); // Bind the loop method to the game instance
 
 export function startGame(template) {
+  const gameTimer = document.getElementById("game-timer");
+
+  gameTimer.innerHTML = "Game started!";
   players.forEach((player, index) => {
     game.generatePlayer(index, player, playerName);
   });

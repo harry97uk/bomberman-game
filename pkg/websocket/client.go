@@ -6,13 +6,10 @@ package websocket
 
 import (
 	"bomberman_server/pkg/gamestate"
-	"bomberman_server/pkg/helpers"
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -44,14 +41,6 @@ var upgrader = websocket.Upgrader{
 }
 
 // GameSession represents a game session with players.
-type GameSession struct {
-	clients      []*Client
-	gameState    *gamestate.GameState
-	chatMessages []ChatMessage
-	timer        int
-	started      bool
-	mu           sync.Mutex
-}
 
 type ChatMessage struct {
 	Sender  string
@@ -167,7 +156,7 @@ func (c *Client) writePump() {
 				return
 			}
 
-			fmt.Println(string(message))
+			//fmt.Println(string(message))
 			w.Write(message)
 
 			// Add queued chat messages to the current websocket message.
@@ -209,6 +198,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	if session == nil {
 		session = &GameSession{}
+		session.timer = 20
 		session.gameState = &gamestate.GameState{}
 		session.gameState.InitialiseMap()
 		gameSessions = append(gameSessions, session)
@@ -222,7 +212,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	go client.writePump()
 }
 
-func createMarshalledWriteMessage(typ string, data interface{}) []byte {
+func CreateMarshalledWriteMessage(typ string, data interface{}) []byte {
 	var writeMessage WriteMessage
 	writeMessage.Type = typ
 	writeMessage.Data = data
@@ -231,50 +221,4 @@ func createMarshalledWriteMessage(typ string, data interface{}) []byte {
 		log.Printf("error: %v", err)
 	}
 	return marshalledData
-}
-
-// AddPlayer adds a player to the game session.
-func (gs *GameSession) AddPlayer(client *Client) {
-	gs.mu.Lock()
-	defer gs.mu.Unlock()
-
-	if len(gs.clients) > 1 {
-		timeTicker := helpers.SetInterval(
-			func() {
-				//send ws message
-
-				gs.timer--
-
-				if gs.timer == 0 && !gs.started {
-					gs.started = true
-					gs.timer = 10
-				}
-
-			},
-			1*time.Second,
-			func() bool {
-				if gs.timer == 0 && gs.started {
-					return true
-				}
-				return false
-			})
-		timeTicker.Reset()
-	}
-
-	gs.clients = append(gs.clients, client)
-
-}
-
-func (gs *GameSession) StartGame() {
-	fmt.Println("Starting the game...")
-	message := createMarshalledWriteMessage("game_start", map[string]interface{}{
-		"template": gs.gameState.Cells,
-	})
-	for _, client := range gs.clients {
-		select {
-		case client.send <- message:
-		default:
-			close(client.send)
-		}
-	}
 }

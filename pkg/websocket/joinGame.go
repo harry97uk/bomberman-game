@@ -15,7 +15,7 @@ func handleClientJoinedGameSession(msg ReadMessage, c *Client) error {
 	//send message that user is online to all of the online clients
 	for _, client := range c.gameSession.clients {
 
-		messageToSend := createMarshalledWriteMessage("player_joined", map[string]interface{}{
+		messageToSend := CreateMarshalledWriteMessage("player_joined", map[string]interface{}{
 			"name":              c.name,
 			"players":           names,
 			"number_of_players": len(c.gameSession.clients),

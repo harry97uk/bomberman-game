@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"log"
 	"time"
 )
 
@@ -14,7 +15,7 @@ func SetInterval(callback func(), interval time.Duration, stopCondition func() b
 
 	go func() {
 		defer ticker.Stop()
-
+		log.Println("Interval started")
 		for {
 			select {
 			case <-ticker.C:
@@ -28,6 +29,7 @@ func SetInterval(callback func(), interval time.Duration, stopCondition func() b
 	go func() {
 		for {
 			if stopCondition() {
+				log.Println("Stopping Interval...")
 				stopChan <- true
 				return
 			}

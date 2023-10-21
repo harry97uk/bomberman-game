@@ -10,7 +10,7 @@ func handleGameUpdate(msg ReadMessage, c *Client) error {
 
 		for _, client := range c.gameSession.clients {
 
-			messageToSend := createMarshalledWriteMessage("game_update", map[string]interface{}{
+			messageToSend := CreateMarshalledWriteMessage("game_update", map[string]interface{}{
 				"desc":  desc,
 				"row":   row,
 				"col":   col,
