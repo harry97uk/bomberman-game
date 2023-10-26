@@ -1,4 +1,5 @@
 import { setPlayerName } from "../app.js";
+import { deleteCookie } from "../helpers/cookie.js";
 import { handleWebsocketMessage } from "./handlemessage.js";
 
 function getCookie(name) {
@@ -54,6 +55,8 @@ socket.addEventListener("close", (event) => {
   } else {
     console.error("WebSocket connection abruptly closed:", event);
   }
+  deleteCookie("userName");
+  window.location.href = "http://localhost:8080";
 });
 
 // Event handler for WebSocket errors

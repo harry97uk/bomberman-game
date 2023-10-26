@@ -1,12 +1,7 @@
 package websocket
 
-import (
-	"fmt"
-)
-
 func handleClientJoinedGameSession(msg ReadMessage, c *Client) error {
 	c.name = msg.Info["name"].(string)
-	fmt.Println(c.name)
 	c.gameSession.gameState.AddPlayer(len(c.gameSession.gameState.Players), c.name)
 	names := []string{}
 	for _, client := range c.gameSession.clients {
@@ -20,7 +15,9 @@ func handleClientJoinedGameSession(msg ReadMessage, c *Client) error {
 			"players":           names,
 			"number_of_players": len(c.gameSession.clients),
 		})
-		client.send <- messageToSend
+		if client != nil {
+			client.send <- messageToSend
+		}
 	}
 
 	return nil

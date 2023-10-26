@@ -4,7 +4,6 @@ import (
 	"bomberman_server/pkg/gamestate"
 	"bomberman_server/pkg/helpers"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 )
@@ -13,6 +12,7 @@ type GameSession struct {
 	clients      []*Client
 	gameState    *gamestate.GameState
 	chatMessages []ChatMessage
+	timeTicker   *helpers.Interval
 	timer        int
 	started      bool
 	mu           sync.Mutex
@@ -24,9 +24,10 @@ func (gs *GameSession) AddPlayer(client *Client) {
 	defer gs.mu.Unlock()
 
 	gs.clients = append(gs.clients, client)
+	gs.timer = 20
 
-	if len(gs.clients) > 1 {
-		timeTicker := helpers.SetInterval(
+	if len(gs.clients) > 1 && gs.timeTicker == nil {
+		gs.timeTicker = helpers.SetInterval(
 			func() {
 				//send ws message
 				message := CreateMarshalledWriteMessage("time_information", map[string]interface{}{
@@ -51,8 +52,19 @@ func (gs *GameSession) AddPlayer(client *Client) {
 				}
 				return false
 			})
-		log.Println(timeTicker)
 	}
+}
+
+func (gs *GameSession) RemovePlayer(client *Client) {
+	gs.mu.Lock()
+	defer gs.mu.Unlock()
+
+	clientIndex := gs.FindClientIndex(client.uuid)
+
+	if clientIndex != -1 {
+		gs.clients = append(gs.clients[:clientIndex], gs.clients[clientIndex+1:]...)
+	}
+
 }
 
 func (gs *GameSession) StartGame() {
@@ -78,4 +90,14 @@ func (gs *GameSession) DecideTimeType() string {
 		return "starting"
 	}
 	return "joining"
+}
+
+func (gs *GameSession) FindClientIndex(targetUUID string) int {
+	for i, client := range gs.clients {
+		if client.uuid == targetUUID {
+			return i
+		}
+	}
+	return -1
+
 }

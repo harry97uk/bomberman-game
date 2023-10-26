@@ -6,8 +6,10 @@ package websocket
 
 import (
 	"bomberman_server/pkg/gamestate"
+	"bomberman_server/pkg/helpers"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -66,8 +68,10 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send              chan []byte
+	sendChannelClosed bool
 
+	uuid        string
 	name        string
 	gameSession *GameSession
 }
@@ -80,6 +84,7 @@ type Client struct {
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
+		c.gameSession.RemovePlayer(c)
 		c.conn.Close()
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
@@ -139,6 +144,7 @@ func (c *Client) writePump() {
 	defer func() {
 		ticker.Stop()
 		onlineUsersTicker.Stop()
+		c.gameSession.RemovePlayer(c)
 		c.conn.Close()
 	}()
 	for {
@@ -147,6 +153,7 @@ func (c *Client) writePump() {
 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// The hub closed the channel.
+				fmt.Println("channel closed!!")
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
@@ -204,7 +211,13 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		gameSessions = append(gameSessions, session)
 	}
 
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), gameSession: session}
+	uuid, err := helpers.CreateUUID()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), uuid: uuid, gameSession: session}
 	client.hub.register <- client
 	session.AddPlayer(client)
 
