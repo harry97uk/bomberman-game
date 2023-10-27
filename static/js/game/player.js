@@ -30,6 +30,9 @@ export class Player {
     this.lives = 3;
     this.radius = game.grid * 0.35;
     this.timer = 500;
+    this.playerInfoDisplay = document.querySelector(
+      `#player-info-${playerNum + 1}`
+    );
 
     // Create a player DOM element
     // this.playerElement = document.createElement("div");
@@ -100,6 +103,14 @@ export class Player {
     if (done || this.timer < 0) {
       this.updatePlayerPosition();
     }
+
+    this.playerInfoDisplay.innerHTML = `Player: ${this.displayName}${"\n"}${
+      this.lives >= 0
+        ? `Lives: ${this.lives}`
+        : `This player placed ${
+            this.game.players.filter((p) => p.lives > -1).length + 1
+          }`
+    }`;
   }
 
   transformPlayerPosition(

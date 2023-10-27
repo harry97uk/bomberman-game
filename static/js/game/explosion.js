@@ -1,6 +1,7 @@
 import CreateElement from "../framework/createElement.js";
 import NestElements from "../framework/nestElements.js";
 import RemoveChildElement from "../framework/removeElement.js";
+import { findElementInVDom } from "../framework/findElemInVdom.js";
 
 // explosion constructor function
 export class Explosion {
@@ -11,15 +12,16 @@ export class Explosion {
     this.dir = dir;
     this.alive = true;
 
-    const x = this.col * this.game.grid;
-    const y = this.row * this.game.grid;
+    this.affectedCell = findElementInVDom(this.game.newVDom, "div", {
+      id: `${this.game.cells[this.row][this.col].id}`,
+    });
 
     // Create an explosion container element
     this.explosionElement = CreateElement("div", {
-      attrs: { class: "explosion", style: `top: ${y}px; left: ${x}px;` },
+      attrs: { class: "explosion" },
     });
 
-    NestElements(this.game.gameContainer, this.explosionElement);
+    NestElements(this.affectedCell, this.explosionElement);
 
     // show explosion for 0.3 seconds
     this.timer = 300;
@@ -51,7 +53,7 @@ export class Explosion {
     if (this.timer <= 0) {
       this.alive = false;
       // Remove the explosion element from the DOM when the explosion is done
-      RemoveChildElement(this.game.gameContainer, this.explosionElement);
+      RemoveChildElement(this.affectedCell, this.explosionElement);
     }
   }
 

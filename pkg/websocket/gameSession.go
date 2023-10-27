@@ -8,6 +8,12 @@ import (
 	"time"
 )
 
+const (
+	JOIN_GAME_SESSION_COUNTDOWN_TIME = 20
+	GAME_START_COUNTDOWN_TIME        = 10
+	MAX_GAME_SESSION_CLIENTS         = 4
+)
+
 type GameSession struct {
 	clients      []*Client
 	gameState    *gamestate.GameState
@@ -24,7 +30,13 @@ func (gs *GameSession) AddPlayer(client *Client) {
 	defer gs.mu.Unlock()
 
 	gs.clients = append(gs.clients, client)
-	gs.timer = 20
+
+	if len(gs.clients) == MAX_GAME_SESSION_CLIENTS {
+		gs.started = true
+		gs.timer = GAME_START_COUNTDOWN_TIME
+	} else {
+		gs.timer = JOIN_GAME_SESSION_COUNTDOWN_TIME
+	}
 
 	if len(gs.clients) > 1 && gs.timeTicker == nil {
 		gs.timeTicker = helpers.SetInterval(
@@ -40,7 +52,7 @@ func (gs *GameSession) AddPlayer(client *Client) {
 
 				if gs.timer == 0 && !gs.started {
 					gs.started = true
-					gs.timer = 10
+					gs.timer = GAME_START_COUNTDOWN_TIME
 				}
 
 			},

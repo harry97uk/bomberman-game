@@ -24,9 +24,9 @@ export function handleWebsocketMessage(msg) {
       break;
     case "chat_message":
       handleChatMessages(msg);
+      break;
     case "time_information":
       handleTimeInformation(msg);
-      break;
       break;
     default:
       break;

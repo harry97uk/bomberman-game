@@ -2,6 +2,7 @@ import RemoveChildElement from "../framework/removeElement.js";
 import CreateElement from "../framework/createElement.js";
 import NestElements from "../framework/nestElements.js";
 import { randomIntFromInterval } from "../helpers/randomInt.js";
+import { findElementInVDom } from "../framework/findElemInVdom.js";
 
 const POWERUPS = [
   { type: "increase_bombs" },
@@ -19,26 +20,24 @@ export class PowerUp {
     this.powerup = ptype ? ptype : POWERUPS[randomIntFromInterval(0, 2)];
     this.timer = 5000;
 
-    const x = this.col * this.game.grid;
-    const y = this.row * this.game.grid;
+    this.affectedCell = findElementInVDom(this.game.newVDom, "div", {
+      id: `${this.game.cells[this.row][this.col].id}`,
+    });
 
     this.powerupElement = CreateElement("div", {
       attrs: {
         class: `${this.powerup.type} powerup`,
-        style: `top: ${y + this.game.grid / 4}px; left: ${
-          x + this.game.grid / 4
-        }px;`,
       },
     });
 
-    NestElements(this.game.gameContainer, this.powerupElement);
+    NestElements(this.affectedCell, this.powerupElement);
   }
 
   update(dt) {
     this.timer -= dt;
     if (!this.alive || this.timer < 0) {
       this.alive = false;
-      RemoveChildElement(this.game.gameContainer, this.powerupElement);
+      RemoveChildElement(this.affectedCell, this.powerupElement);
     }
   }
 
@@ -46,7 +45,4 @@ export class PowerUp {
   render() {
     //console.log("no render needed");
   }
-
-  // Update the bomb's position on the DOM
-  updatePowerUpPosition() {}
 }

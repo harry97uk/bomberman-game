@@ -19,16 +19,18 @@ export class Bomb {
     this.alive = true;
     this.type = this.game.types.bomb;
 
-    const x = this.col * this.game.grid;
-    const y = this.row * this.game.grid;
-
     // Create a bomb DOM element
     this.bombElement = CreateElement("div", {
-      attrs: { class: "bomb", style: `top: ${y}px; left: ${x}px;` },
+      attrs: { class: "bomb" },
       children: ["3"],
     });
 
-    NestElements(this.game.gameContainer, this.bombElement);
+    //const affectedCell = document.querySelector(`#cell${this.game.cells[this.row][this.col].id}`)
+    this.affectedCell = findElementInVDom(this.game.newVDom, "div", {
+      id: `${this.game.cells[this.row][this.col].id}`,
+    });
+
+    NestElements(this.affectedCell, this.bombElement);
 
     // bomb blows up after 3 seconds
     this.timer = 3000;
@@ -55,13 +57,6 @@ export class Bomb {
     //console.log("no render needed");
   }
 
-  // Update the bomb's position on the DOM
-  updateBombPosition() {
-    const x = this.col * this.game.grid;
-    const y = this.row * this.game.grid;
-    this.bombElement.attrs.style = `top: ${y}px; left: ${x}px;`;
-  }
-
   // blow up a bomb and its surrounding tiles
   blowUpBomb() {
     // bomb has already exploded so don't blow up again
@@ -70,7 +65,7 @@ export class Bomb {
     this.alive = false;
 
     // remove bomb from grid
-    RemoveChildElement(this.game.gameContainer, this.bombElement);
+    RemoveChildElement(this.affectedCell, this.bombElement);
 
     // explode bomb outward by size
     const dirs = [

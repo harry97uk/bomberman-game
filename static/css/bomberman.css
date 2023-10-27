@@ -10,6 +10,10 @@ body {
     background: black;
 }
 
+body>* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 #game-lobby {
     position: relative;
     display: flex;
@@ -24,7 +28,8 @@ body {
 #game-lobby #game-players {
     display: flex;
     flex-direction: column;
-    height: 15%;
+    min-height: 15%;
+    height: auto;
     width: 90%;
     padding: 5%;
     background-color: antiquewhite;
@@ -52,6 +57,7 @@ body {
 }
 
 #game-lobby #game-chat #chat-input {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -130,6 +136,34 @@ body {
 
 .space {
     position: absolute;
+}
+
+.player-info {
+    color: white;
+    position: relative;
+    height: auto;
+    max-width: 50px;
+    z-index: 99;
+}
+
+#player-info-1 {
+    top: -40%;
+    left: 15%;
+}
+
+#player-info-2 {
+    top: -40%;
+    left: 65%;
+}
+
+#player-info-3 {
+    top: 40%;
+    left: -62%;
+}
+
+#player-info-4 {
+    top: 40%;
+    left: -14%;
 }
 
 .player {

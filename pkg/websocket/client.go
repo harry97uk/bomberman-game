@@ -197,7 +197,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// Create or join a game session
 	var session *GameSession
 	for _, gs := range gameSessions {
-		if len(gs.clients) < 4 && !gs.started {
+		if len(gs.clients) < MAX_GAME_SESSION_CLIENTS && !gs.started {
 			session = gs
 			break
 		}
@@ -205,7 +205,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	if session == nil {
 		session = &GameSession{}
-		session.timer = 20
+		session.timer = JOIN_GAME_SESSION_COUNTDOWN_TIME
 		session.gameState = &gamestate.GameState{}
 		session.gameState.InitialiseMap()
 		gameSessions = append(gameSessions, session)
